@@ -13,8 +13,12 @@
 
 <body>
   <a-scene>
-    <a-box color = "white"></a-box>
-    <a-entity environment="preset: starry"></a-entity>
+    <a-scene>
+      <!-- Ping Pong Table -->
+      <a-box position="0 0.5 0" dddepth="10" height="0.2" width="5" color="#F5F5DC"></a-box>
+    </a-scene>
+
+    <a-entity environment="preset: japan"></a-entity>
   </a-scene>
   <script src="script.js"></script>
 </body>
