@@ -8,7 +8,9 @@
     <script src="https://unpkg.com/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        // Add event listener for paddle movement
+        const ball = document.querySelector('#ball');
+
+        // Paddle movement
         document.addEventListener('keydown', (event) => {
           const paddle1 = document.querySelector('#paddle1');
           switch (event.key) {
@@ -23,9 +25,25 @@
           }
         });
 
+        // Function to start the game
+        function startGame() {
+          // Reset ball position
+          ball.object3D.position.set(2, 3, 5);
+
+          // Set initial velocity to the ball
+          ball.setAttribute('dynamic-body', 'velocity: 2 0 0'); // Adjust initial velocity as needed
+        }
+
+        // Start the game on key press
+        document.addEventListener('keypress', (event) => {
+          if (event.key === ' ') { // Spacebar
+            startGame();
+          }
+        });
+
+        // AI Paddle Movement function
         function moveAIPaddle() {
           const paddle2 = document.querySelector('#paddle2');
-          const ball = document.querySelector('#ball');
 
           if (ball.object3D.position.y > paddle2.object3D.position.y) {
             paddle2.object3D.position.y += 0.05;
@@ -38,7 +56,7 @@
           requestAnimationFrame(moveAIPaddle);
         }
 
-        moveAIPaddle();
+        moveAIPaddle(); // Start AI paddle movement
       });
     </script>
   </head>
