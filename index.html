@@ -9,10 +9,11 @@
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const ball = document.querySelector('#ball');
+        const paddle1 = document.querySelector('#paddle1');
+        const paddle2 = document.querySelector('#paddle2');
 
         // Paddle movement
         document.addEventListener('keydown', (event) => {
-          const paddle1 = document.querySelector('#paddle1');
           switch (event.key) {
             case 'i':
               paddle1.object3D.position.y += 0.1;
@@ -27,11 +28,20 @@
 
         // Function to start the game
         function startGame() {
-          // Reset ball position
-          ball.object3D.position.set(2, 3, 5);
+          console.log('Starting game...');
+          
+          // Move ball to player's side and apply boost
+          ball.object3D.position.set(-1.5, 1, 0);
+          ball.setAttribute('position', { x: -2.5, y: 3, z: 0 });
 
-          // Set initial velocity to the ball
-          ball.setAttribute('dynamic-body', 'velocity: 2 0 0'); // Adjust initial velocity as needed
+          // Ensure dynamic-body is present
+          ball.setAttribute('dynamic-body', 'shape: sphere; mass: 1');
+
+          // Apply initial velocity
+          ball.body.velocity.set(2, 0, 0); // Adjust initial velocity as needed
+          
+          console.log('Ball position:', ball.object3D.position);
+          console.log('Ball velocity:', ball.body.velocity);
         }
 
         // Start the game on key press
@@ -43,8 +53,6 @@
 
         // AI Paddle Movement function
         function moveAIPaddle() {
-          const paddle2 = document.querySelector('#paddle2');
-
           if (ball.object3D.position.y > paddle2.object3D.position.y) {
             paddle2.object3D.position.y += 0.05;
             paddle2.setAttribute('position', paddle2.object3D.position);
@@ -57,6 +65,17 @@
         }
 
         moveAIPaddle(); // Start AI paddle movement
+
+        // Handle collisions with paddles
+        ball.addEventListener('collide', (event) => {
+          const target = event.detail.body.el;
+          console.log('Ball collided with', target.id);
+
+          if (target === paddle1 || target === paddle2) {
+            // Reverse ball's x-velocity
+            ball.body.velocity.x *= -1;
+          }
+        });
       });
     </script>
   </head>
@@ -70,7 +89,7 @@
       <a-box id="paddle2" position="2.3 1 0" depth="0.2" height="1" width="0.2" color="red" static-body></a-box>
 
       <!-- Ball -->
-      <a-sphere id="ball" position="0 1 0" radius="0.2" color="white" dynamic-body></a-sphere>
+      <a-sphere id="ball" position="0 1 0" radius="0.2" color="white" dynamic-body="shape: sphere; mass: 1"></a-sphere>
 
       <!-- Japan Scenery -->
       <a-entity environment="preset: japan"></a-entity>
