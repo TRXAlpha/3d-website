@@ -11,17 +11,34 @@
         const ball = document.querySelector('#ball');
         const paddle1 = document.querySelector('#paddle1');
         const paddle2 = document.querySelector('#paddle2');
+        const tableWidth = 5;
 
         // Paddle movement
         document.addEventListener('keydown', (event) => {
           switch (event.key) {
             case 'i':
-              paddle1.object3D.position.y += 0.1;
-              paddle1.setAttribute('position', paddle1.object3D.position);
+              if (paddle1.object3D.position.y < 2.5) {
+                paddle1.object3D.position.y += 0.1;
+                paddle1.setAttribute('position', paddle1.object3D.position);
+              }
               break;
             case 'k':
-              paddle1.object3D.position.y -= 0.1;
-              paddle1.setAttribute('position', paddle1.object3D.position);
+              if (paddle1.object3D.position.y > 0.5) {
+                paddle1.object3D.position.y -= 0.1;
+                paddle1.setAttribute('position', paddle1.object3D.position);
+              }
+              break;
+            case 'j':
+              if (paddle1.object3D.position.x > -tableWidth / 2 + 0.1) {
+                paddle1.object3D.position.x -= 0.1;
+                paddle1.setAttribute('position', paddle1.object3D.position);
+              }
+              break;
+            case 'l':
+              if (paddle1.object3D.position.x < tableWidth / 2 - 0.1) {
+                paddle1.object3D.position.x += 0.1;
+                paddle1.setAttribute('position', paddle1.object3D.position);
+              }
               break;
           }
         });
@@ -30,15 +47,15 @@
         function startGame() {
           console.log('Starting game...');
           
-          // Move ball to player's side and apply boost
-          ball.object3D.position.set(-1.5, 1, 0);
-          ball.setAttribute('position', { x: -2.5, y: 3, z: 0 });
+          // Move ball to higher position on player's side
+          ball.object3D.position.set(-1.5, 2, 0);
+          ball.setAttribute('position', { x: -1.5, y: 2, z: 0 });
 
           // Ensure dynamic-body is present
           ball.setAttribute('dynamic-body', 'shape: sphere; mass: 1');
 
-          // Apply initial velocity
-          ball.body.velocity.set(2, 0, 0); // Adjust initial velocity as needed
+          // Apply initial velocity to simulate throw
+          ball.body.velocity.set(2, -3, 0); // Adjust initial velocity as needed
           
           console.log('Ball position:', ball.object3D.position);
           console.log('Ball velocity:', ball.body.velocity);
@@ -72,8 +89,9 @@
           console.log('Ball collided with', target.id);
 
           if (target === paddle1 || target === paddle2) {
-            // Reverse ball's x-velocity
+            // Reverse ball's x-velocity and give it a boost in y-velocity
             ball.body.velocity.x *= -1;
+            ball.body.velocity.y = 10; // Adjust the boost as needed
           }
         });
       });
