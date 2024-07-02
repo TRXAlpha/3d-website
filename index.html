@@ -7,16 +7,18 @@
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.min.js"></script>
     <script src="https://unpkg.com/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-      document.addEventListener("keydown", function (event) {
-          const paddle1 = document.querySelector("#paddle1");
+      document.addEventListener("DOMContentLoaded", function () {
+        const paddle1 = document.querySelector("#paddle1");
         const paddle2 = document.querySelector("#paddle2");
         const ball = document.querySelector("#ball");
-                 var leftPosition = paddle1.getAttribute("position");
-          var rightPosition = paddle2.getAttribute("position");
-        var ballPosition = ball.getAttribute("position");
-        
-
+ 
+        let ballVelocity = { x: 0, y: 0, z: 0 };
+ 
+        document.addEventListener("keydown", function (event) {
+          console.log(`Key pressed: ${event.key}`);
+          let leftPosition = paddle1.getAttribute("position");
+          let rightPosition = paddle2.getAttribute("position");
+ 
           switch (event.key) {
             case "i":
               if (leftPosition.y < 2.5) {
@@ -30,47 +32,68 @@
               }
               paddle1.setAttribute("position", leftPosition);
               break;
-            case 'j':
-              if (leftPosition.x > -4 / 2 + 0.1) { 
+            case "j":
+              if (leftPosition.x > -2) {
                 leftPosition.x -= 0.1;
               }
               paddle1.setAttribute("position", leftPosition);
               break;
-            case 'l':
-              if (leftPosition.x < 4 / 2 - 0.1) { 
+            case "l":
+              if (leftPosition.x < 2) {
                 leftPosition.x += 0.1;
               }
               paddle1.setAttribute("position", leftPosition);
               break;
-          } <!-- switch paranthesis -->
-        
-        }); <!-- keydown event listener paranthesis -->
-      });<!-- dom content loaded event listener paranthesis -->
-      function moveAIPaddle() {
-          if (ball.position.y > paddle2.position.y) {
-            paddle2.position.y += 0.05;
-            paddle2.setAttribute('position', paddle2.position);
-          } else if (ball.position.y < paddle2.position.y) {
-            paddle2.position.y -= 0.05;
-            paddle2.setAttribute('position', paddle2.position);
+            case " ":
+              ballVelocity = { x: 0, y: 0, z: -0.2 };
+              ball.setAttribute("velocity", ballVelocity);
+              break;
           }
-    moveAIPaddle();
+        });
+ 
+        function moveAIPaddle() {
+          let ballPosition = ball.getAttribute("position");
+          let rightPosition = paddle2.getAttribute("position");
+ 
+          if (ballPosition.y > rightPosition.y && rightPosition.y < 2.5) {
+            rightPosition.y += 0.05;
+          } else if (ballPosition.y < rightPosition.y && rightPosition.y > 0.5) {
+            rightPosition.y -= 0.05;
+          }
+          if (ballPosition.x > rightPosition.x && rightPosition.x < 2) {
+            rightPosition.x += 0.05;
+          } else if (ballPosition.x < rightPosition.x && rightPosition.x > -2) {
+            rightPosition.x -= 0.05;
+          }
+          paddle2.setAttribute("position", rightPosition);
+        }
+ 
+        setInterval(moveAIPaddle, 100); // Move AI paddle at a set interval
+ 
+        // Ball boundary check
+        setInterval(function () {
+          let ballPosition = ball.getAttribute("position");
+          if (ballPosition.y > 2.5 || ballPosition.y < 0.5 || ballPosition.x > 2 || ballPosition.x < -2) {
+            ballVelocity = { x: 0, y: 0, z: 0 };
+            ball.setAttribute("velocity", ballVelocity);
+            ball.setAttribute("position", "0 0.5 0");
+          }
+        }, 50);
+      });
     </script>
   </head>
   <body>
-    <a-scene physics = "debug: true">
-      <!-- Uncomment for knowing directions of objects
-    
-      <a-entity camera look-controls position="0 1.6 3"></a-entity>
-    -->
-
+    <a-scene physics="debug: true">
+      <!-- Uncomment for knowing directions of objects -->
+      <!-- <a-entity camera look-controls position="0 1.6 3"></a-entity> -->
+ 
       <!-- Lighting -->
       <a-entity
         light="type: directional; color: #EEE; intensity: 0.5"
         position="-1 1 1"
       ></a-entity>
       <a-entity light="type: ambient; color: #445451"></a-entity>
-
+ 
       <!-- Floor -->
       <a-box
         static-body
@@ -80,7 +103,7 @@
         depth="10"
         color="#7BC8A4"
       ></a-box>
-
+ 
       <!-- Table -->
       <a-box
         static-body
@@ -90,68 +113,66 @@
         depth="2"
         color="#4CAF50"
       ></a-box>
-      
+ 
       <!-- Middle Line -->
       <a-box
         static-body
-        position = "0 0.25 0"
-        width = "0.2"
-             height = "0.1"
-             depth = "2"
-             color = "#FFF"
-             ></a-box>
-      
+        position="0 0.25 0"
+        width="0.2"
+        height="0.1"
+        depth="2"
+        color="#FFF"
+      ></a-box>
+ 
       <!-- Right Line -->
-         <a-box
+      <a-box
         static-body
-        position = "2 0.25 0"
-        width = "0.1"
-             height = "0.1"
-             depth = "2"
-             color = "#FFF"
-             ></a-box>
-      
+        position="2 0.25 0"
+        width="0.1"
+        height="0.1"
+        depth="2"
+        color="#FFF"
+      ></a-box>
+ 
       <!-- Left Line -->
-         <a-box
+      <a-box
         static-body
-        position = "-2 0.25 0"
-        width = "0.1"
-             height = "0.1"
-             depth = "2"
-             color = "#FFF"
-             ></a-box>
-      
-      <!--Long Line, towards the camera -->
-        <a-box
+        position="-2 0.25 0"
+        width="0.1"
+        height="0.1"
+        depth="2"
+        color="#FFF"
+      ></a-box>
+ 
+      <!-- Long Line, towards the camera -->
+      <a-box
         static-body
-        position = "0 0.25 1"
-        width = "4"
-             height = "0.1"
-             depth = "0.1"
-             color = "#FFF"
-             ></a-box>
-      
-       <!--Long Line, opposite the camera -->
-        <a-box
+        position="0 0.25 1"
+        width="4"
+        height="0.1"
+        depth="0.1"
+        color="#FFF"
+      ></a-box>
+ 
+      <!-- Long Line, opposite the camera -->
+      <a-box
         static-body
-        position = "0 0.25 -1"
-        width = "4"
-             height = "0.1"
-             depth = "0.1"
-             color = "#FFF"
-             ></a-box>
-      
-
-
+        position="0 0.25 -1"
+        width="4"
+        height="0.1"
+        depth="0.1"
+        color="#FFF"
+      ></a-box>
+ 
       <!-- Ball -->
       <a-sphere
-                id = "ball"
+        id="ball"
         dynamic-body
         position="0 0.5 0"
         radius="0.1"
         color="#EF2D5E"
       ></a-sphere>
-
+ 
       <!-- Auto Driven Paddle -->
       <a-box
         id="paddle2"
@@ -161,7 +182,9 @@
         height="0.2"
         depth="0.6"
         color="#FFC65D"
+        gravity="0"
       ></a-box>
+ 
       <!-- Player-Driven Paddle -->
       <a-box
         id="paddle1"
@@ -171,8 +194,9 @@
         height="0.2"
         depth="0.6"
         color="#FFC65D"
+        gravity="0"
       ></a-box>
-
+ 
       <!-- Environment -->
       <a-entity environment="preset: japan"></a-entity>
     </a-scene>
