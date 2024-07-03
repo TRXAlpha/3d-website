@@ -11,75 +11,103 @@
         const paddle1 = document.querySelector("#paddle1");
         const paddle2 = document.querySelector("#paddle2");
         const ball = document.querySelector("#ball");
+        const startText = document.querySelector("#startText");
+        let gameStarted = false;
 
         let ballVelocity = { x: 0, y: 0, z: 0 };
 
         document.addEventListener("keydown", function (event) {
-          console.log(`Key pressed: ${event.key}`);
-          let leftPosition = paddle1.getAttribute("position");
-          let rightPosition = paddle2.getAttribute("position");
-
-          switch (event.key) {
-            case "i":
-              if (leftPosition.y < 2.5) {
-                leftPosition.y += 0.1;
-              }
-              if (leftPosition.y > 2.5) {
-                leftPosition.y = 2.5;
-              }
-              paddle1.setAttribute("position", leftPosition);
-              break;
-            case "k":
-              if (leftPosition.y > 0.5) {
-                leftPosition.y -= 0.1;
-              }
-              if (leftPosition.y < 0.5) {
-                leftPosition.y = 0.5;
-              }
-              paddle1.setAttribute("position", leftPosition);
-              break;
-            case "j":
-              if (leftPosition.z > -2) {
-                leftPosition.z -= 0.1;
-              }
-              if (leftPosition.z < -2) {
-                leftPosition.z = -2;
-              }
-              paddle1.setAttribute("position", leftPosition);
-              break;
-            case "l":
-              if (leftPosition.z < 2) {
-                leftPosition.z += 0.1;
-              }
-              if (leftPosition.z > 2) {
-                leftPosition.z = 2;
-              }
-              paddle1.setAttribute("position", leftPosition);
-              break;
-            case " ":
-              ballVelocity = { x: 0, y: 0, z: -0.2 };
+          if (!gameStarted) {
+            if (event.key === " ") {
+              // Start the game
+              ballVelocity = { x: 0, y: 0, z: -0.2 }; // Set velocity towards the player
               ball.setAttribute("velocity", ballVelocity);
-              break;
+              startText.setAttribute("visible", false); // Hide the start text
+              gameStarted = true;
+              return;
+            }
+          } else {
+            let leftPosition = paddle1.getAttribute("position");
+
+            switch (event.key) {
+              case "i":
+                if (leftPosition.y < 2) {
+                  leftPosition.y += 0.1;
+                }
+                if (leftPosition.y > 2) {
+                  leftPosition.y = 2;
+                }
+                paddle1.setAttribute("position", leftPosition);
+                break;
+              case "k":
+                if (leftPosition.y > 0.5) {
+                  leftPosition.y -= 0.1;
+                }
+                if (leftPosition.y < 0.5) {
+                  leftPosition.y = 0.5;
+                }
+                paddle1.setAttribute("position", leftPosition);
+                break;
+              case "j":
+                if (leftPosition.z > -2) {
+                  leftPosition.z -= 0.1;
+                }
+                if (leftPosition.z < -2) {
+                  leftPosition.z = -2;
+                }
+                paddle1.setAttribute("position", leftPosition);
+                break;
+              case "l":
+                if (leftPosition.z < 2) {
+                  leftPosition.z += 0.1;
+                }
+                if (leftPosition.z > 2) {
+                  leftPosition.z = 2;
+                }
+                paddle1.setAttribute("position", leftPosition);
+                break;
+            }
           }
         });
 
-      
-        // Ball boundary check
-        setInterval(function () {
-          let ballPosition = ball.getAttribute("position");
-          if (ballPosition.y > 2.5 || ballPosition.y < 0.5 || ballPosition.x > 2 || ballPosition.x < -2) {
-            ballVelocity = { x: 0, y: 0, z: 0 };
-            ball.setAttribute("velocity", ballVelocity);
-            ball.setAttribute("position", "0 0.5 0");
+        function moveAIPaddle() {
+          if (gameStarted) {
+            let ballPosition = ball.getAttribute("position");
+            let rightPosition = paddle2.getAttribute("position");
+
+            if (ballPosition.y > rightPosition.y && rightPosition.y < 2) {
+              rightPosition.y += 0.05;
+            } else if (
+              ballPosition.y < rightPosition.y &&
+              rightPosition.y > 0.5
+            ) {
+              rightPosition.y -= 0.05;
+            }
+            if (ballPosition.z > rightPosition.z && rightPosition.z < 2) {
+              rightPosition.z += 0.05;
+            } else if (
+              ballPosition.z < rightPosition.z &&
+              rightPosition.z > -2
+            ) {
+              rightPosition.z -= 0.05;
+            }
+            paddle2.setAttribute("position", rightPosition);
           }
-        }, 50);
+        }
+
+        setInterval(moveAIPaddle, 100); // Move AI paddle at a set interval
       });
     </script>
   </head>
   <body>
     <a-scene physics="debug: true">
       <!-- Uncomment for knowing directions of objects -->
-      <!-- <a-entity camera look-controls position="0 1.6 3"></a-entity> -->
+      <a-entity
+        camera
+        position="-4 1.8 0"
+        rotation="0 -90 0"
+        look-controls="enabled: false"
+      ></a-entity>
 
       <!-- Lighting -->
       <a-entity
@@ -88,15 +116,14 @@
       ></a-entity>
       <a-entity light="type: ambient; color: #445451"></a-entity>
 
-      <!-- Floor -->
-      <a-box
-        static-body
-        position="0 -1 0"
-        width="10"
-        height="0.1"
-        depth="10"
-        color="#7BC8A4"
-      ></a-box>
+      <a-text
+        id="startText"
+        value="Press Space to Start"
+        align="center"
+        position="0 2 1.5"
+        width="4"
+        color="#FFF"
+      ></a-text>
 
       <!-- Table -->
       <a-box
@@ -170,7 +197,7 @@
       <!-- Auto Driven Paddle -->
       <a-box
         id="paddle2"
-        position="1 0.5 0"
+        position="1.5 0.5 0"
         width="0.1"
         height="0.2"
         depth="0.6"
@@ -180,7 +207,7 @@
       <!-- Player-Driven Paddle -->
       <a-box
         id="paddle1"
-        position="-1 0.5 0"
+        position="-1.5 0.5 0"
         width="0.1"
         height="0.2"
         depth="0.6"
