@@ -14,62 +14,53 @@
         const startText = document.querySelector("#startText");
         let gameStarted = false;
 
-        let ballVelocity = { x: 0, y: 0, z: 0 };
+        // Function to move the player's paddle
+        function movePaddle(event) {
+          let leftPosition = paddle1.getAttribute("position");
 
-        document.addEventListener("keydown", function (event) {
-          if (!gameStarted) {
-            if (event.key === " ") {
-              // Start the game
-              ballVelocity = { x: 0, y: 0, z: -0.2 }; // Set velocity towards the player
-              ball.setAttribute("velocity", ballVelocity);
-              startText.setAttribute("visible", false); // Hide the start text
-              gameStarted = true;
-              return;
-            }
-          } else {
-            let leftPosition = paddle1.getAttribute("position");
-
-            switch (event.key) {
-              case "i":
-                if (leftPosition.y < 2) {
-                  leftPosition.y += 0.1;
-                }
-                if (leftPosition.y > 2) {
-                  leftPosition.y = 2;
-                }
-                paddle1.setAttribute("position", leftPosition);
-                break;
-              case "k":
-                if (leftPosition.y > 0.5) {
-                  leftPosition.y -= 0.1;
-                }
-                if (leftPosition.y < 0.5) {
-                  leftPosition.y = 0.5;
-                }
-                paddle1.setAttribute("position", leftPosition);
-                break;
-              case "j":
-                if (leftPosition.z > -2) {
-                  leftPosition.z -= 0.1;
-                }
-                if (leftPosition.z < -2) {
-                  leftPosition.z = -2;
-                }
-                paddle1.setAttribute("position", leftPosition);
-                break;
-              case "l":
-                if (leftPosition.z < 2) {
-                  leftPosition.z += 0.1;
-                }
-                if (leftPosition.z > 2) {
-                  leftPosition.z = 2;
-                }
-                paddle1.setAttribute("position", leftPosition);
-                break;
-            }
+          switch (event.key) {
+            case "i":
+              if (leftPosition.y < 2) leftPosition.y += 0.1;
+              if (leftPosition.y > 2) leftPosition.y = 2;
+              paddle1.setAttribute("position", leftPosition);
+              break;
+            case "k":
+              if (leftPosition.y > 0.5) leftPosition.y -= 0.1;
+              if (leftPosition.y < 0.5) leftPosition.y = 0.5;
+              paddle1.setAttribute("position", leftPosition);
+              break;
+            case "j":
+              if (leftPosition.z > -2) leftPosition.z -= 0.1;
+              if (leftPosition.z < -2) leftPosition.z = -2;
+              paddle1.setAttribute("position", leftPosition);
+              break;
+            case "l":
+              if (leftPosition.z < 2) leftPosition.z += 0.1;
+              if (leftPosition.z > 2) leftPosition.z = 2;
+              paddle1.setAttribute("position", leftPosition);
+              break;
           }
-        });
+        }
 
+        // Start the game when the spacebar is pressed
+        function startGame(event) {
+          if (!gameStarted && event.key === " ") {
+            // Start the game
+            const impulse = new CANNON.Vec3(-9, 0, 0); // Apply impulse towards the player
+            const worldPoint = new CANNON.Vec3().copy(
+              ball.getAttribute("position")
+            );
+            ball.body.applyImpulse(impulse, worldPoint);
+            startText.setAttribute("visible", false); // Hide the start text
+            gameStarted = true;
+          }
+        }
+
+        // Set up event listeners
+        document.addEventListener("keydown", movePaddle);
+        document.addEventListener("keydown", startGame);
+
+        // Function to move the AI paddle
         function moveAIPaddle() {
           if (gameStarted) {
             let ballPosition = ball.getAttribute("position");
@@ -96,19 +87,28 @@
         }
 
         setInterval(moveAIPaddle, 100); // Move AI paddle at a set interval
+
+        // Ball boundary check
+        setInterval(function () {
+          let ballPosition = ball.getAttribute("position");
+          if (
+            ballPosition.y > 2 ||
+            ballPosition.y < 0.5 ||
+            ballPosition.z > 2 ||
+            ballPosition.z < -2
+          ) {
+            ballVelocity = { x: 0, y: 0, z: 0 };
+            ball.setAttribute("velocity", ballVelocity);
+            ball.setAttribute("position", "0 0.5 0");
+            gameStarted = false;
+            startText.setAttribute("visible", true); // Show the start text
+          }
+        }, 50);
       });
     </script>
   </head>
   <body>
     <a-scene physics="debug: true">
-      <!-- Uncomment for knowing directions of objects -->
-      <a-entity
-        camera
-        position="-4 1.8 0"
-        rotation="0 -90 0"
-        look-controls="enabled: false"
-      ></a-entity>
-
       <!-- Lighting -->
       <a-entity
         light="type: directional; color: #EEE; intensity: 0.5"
@@ -116,11 +116,13 @@
       ></a-entity>
       <a-entity light="type: ambient; color: #445451"></a-entity>
 
+      <!-- Text -->
       <a-text
         id="startText"
         value="Press Space to Start"
         align="center"
-        position="0 2 1.5"
+        rotation="0 -90 0"
+        position="0 2 0"
         width="4"
         color="#FFF"
       ></a-text>
@@ -192,26 +194,31 @@
         position="0 0.5 0"
         radius="0.1"
         color="#EF2D5E"
+        material="bounciness: 1; restitution: 1;"
       ></a-sphere>
 
       <!-- Auto Driven Paddle -->
       <a-box
         id="paddle2"
+        static-body
         position="1.5 0.5 0"
         width="0.1"
         height="0.2"
         depth="0.6"
         color="#FFC65D"
+        material="bounciness: 1; restitution: 1;"
       ></a-box>
 
       <!-- Player-Driven Paddle -->
       <a-box
         id="paddle1"
+        static-body
         position="-1.5 0.5 0"
         width="0.1"
         height="0.2"
         depth="0.6"
         color="#FFC65D"
+        material="bounciness: 1; restitution: 1;"
       ></a-box>
 
       <!-- Environment -->
